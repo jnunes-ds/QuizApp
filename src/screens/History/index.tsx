@@ -50,7 +50,10 @@ export function History() {
         text: "Sim",
         onPress: () => remove(id),
       },
-      { text: "Não", style: "cancel" },
+      {
+        text: "Não",
+        style: "cancel",
+      },
     ]);
   }
 
@@ -87,14 +90,14 @@ export function History() {
                 if (ref) swipeableRef.current.push(ref);
               }}
               containerStyle={styles.swipeableContainer}
+              leftThreshold={10}
+              onSwipeableOpen={() => handleRemove(item.id, index)}
               renderLeftActions={() => (
-                <Pressable
-                  style={styles.swipeableRemove}
-                  onPress={() => handleRemove(item.id, index)}
-                >
+                <View style={styles.swipeableRemove}>
                   <Trash size={32} color={THEME.COLORS.GREY_100} />
-                </Pressable>
+                </View>
               )}
+              renderRightActions={() => null}
             >
               <HistoryCard data={item} />
             </Swipeable>
