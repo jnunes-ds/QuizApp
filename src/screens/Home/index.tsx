@@ -45,25 +45,6 @@ export function Home() {
         onPress={() => navigate("history")}
       />
 
-      {show ? (
-        <Animated.View
-          entering={FlipInYLeft.duration(1500).delay(500)}
-          exiting={FlipOutYRight.duration(1500).delay(500)}
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: THEME.COLORS.DANGER_LIGHT,
-          }}
-        />
-      ) : (
-        <View style={{ width: 50, height: 50 }} />
-      )}
-
-      <Button
-        title={!show ? "Mostrar" : "Esconder"}
-        onPress={() => setShow((prevState) => !prevState)}
-      />
-
       <View style={styles.levels}>
         <Level
           title="Fácil"
