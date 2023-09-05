@@ -1,36 +1,70 @@
-import { View, Text } from 'react-native';
+import { View, Text, Dimensions } from "react-native";
 
-import { Option } from '../Option';
-import { styles } from './styles';
+import { Option } from "../Option";
+import { styles } from "./styles";
+import Animated, { Keyframe } from "react-native-reanimated";
+
+const SCREEN_WIDTH = Dimensions.get("window").width;
 
 type QuestionProps = {
   title: string;
   alternatives: string[];
-}
+};
 
 type Props = {
   question: QuestionProps;
   alternativeSelected?: number | null;
   setAlternativeSelected?: (value: number) => void;
-}
+};
 
-export function Question({ question, alternativeSelected, setAlternativeSelected }: Props) {
+export function Question({
+  question,
+  alternativeSelected,
+  setAlternativeSelected,
+}: Props) {
+  const enteringKeyframe = new Keyframe({
+    0: {
+      opacity: 0,
+      transform: [{ translateX: SCREEN_WIDTH }, { rotate: "90deg" }],
+    },
+    70: {
+      opacity: 0.3,
+    },
+    100: {
+      opacity: 1,
+      transform: [{ translateX: 0 }, { rotate: "0deg" }],
+    },
+  });
+
+  const exitingKeyframe = new Keyframe({
+    from: {
+      opacity: 1,
+      transform: [{ translateX: 0 }, { rotate: "0deg" }],
+    },
+    to: {
+      opacity: 0,
+      transform: [{ translateX: -SCREEN_WIDTH }, { rotate: "-90deg" }],
+    },
+  });
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
-        {question.title}
-      </Text>
+    <Animated.View
+      entering={enteringKeyframe}
+      exiting={exitingKeyframe}
+      style={styles.container}
+    >
+      <Text style={styles.title}>{question.title}</Text>
 
-      {
-        question.alternatives.map((alternative, index) => (
-          <Option
-            key={index}
-            title={alternative}
-            checked={alternativeSelected === index}
-            onPress={() => setAlternativeSelected && setAlternativeSelected(index)}
-          />
-        ))
-      }
-    </View>
+      {question.alternatives.map((alternative, index) => (
+        <Option
+          key={index}
+          title={alternative}
+          checked={alternativeSelected === index}
+          onPress={() =>
+            setAlternativeSelected && setAlternativeSelected(index)
+          }
+        />
+      ))}
+    </Animated.View>
   );
 }
