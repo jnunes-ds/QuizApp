@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { Alert, ScrollView, Text, View } from "react-native";
+import { Alert, Text, View } from "react-native";
+
+import { GestureDetector, Gesture } from "react-native-gesture-handler";
 
 import { useNavigation, useRoute } from "@react-navigation/native";
 
@@ -22,6 +24,7 @@ import Animated, {
   useSharedValue,
   withSequence,
   withTiming,
+  runOnJS,
 } from "react-native-reanimated";
 import { ProgressBar } from "../../components/ProgressBar";
 import { THEME } from "../../styles/theme";
@@ -31,6 +34,9 @@ interface Params {
 }
 
 type QuizProps = (typeof QUIZ)[0];
+
+const CARD_INCLINATION = 10;
+const CARD_SKIP_AREA = -200;
 
 export function Quiz() {
   const [points, setPoints] = useState(0);
@@ -43,6 +49,7 @@ export function Quiz() {
 
   const shake = useSharedValue(0);
   const scrollInY = useSharedValue(0);
+  const cardPosition = useSharedValue(0);
 
   const { navigate } = useNavigation();
 
@@ -151,11 +158,37 @@ export function Quiz() {
     opacity: interpolate(scrollInY.value, [40, 80], [1, 0]),
   }));
 
+  const dragStyleAnimated = useAnimatedStyle(() => {
+    const rotateZ = cardPosition.value / CARD_INCLINATION;
+
+    return {
+      transform: [
+        { translateX: cardPosition.value },
+        { rotateZ: `${rotateZ}deg` },
+      ],
+    };
+  });
+
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
       scrollInY.value = event.contentOffset.y;
     },
   });
+
+  const onPan = Gesture.Pan()
+    .onUpdate((event) => {
+      const isMovingToRight: boolean = event.translationX > 15;
+
+      if (isMovingToRight) return;
+
+      cardPosition.value = event.translationX;
+    })
+    .onEnd(() => {
+      if (cardPosition.value < CARD_SKIP_AREA) {
+        runOnJS(handleNextQuestion)();
+      }
+      cardPosition.value = withTiming(0);
+    });
 
   useEffect(() => {
     const quizSelected = QUIZ.filter((item) => item.id === id)[0];
@@ -189,14 +222,16 @@ export function Quiz() {
           />
         </Animated.View>
 
-        <Animated.View style={shakeStyleAnimated}>
-          <Question
-            key={quiz.questions[currentQuestion].title}
-            question={quiz.questions[currentQuestion]}
-            alternativeSelected={alternativeSelected}
-            setAlternativeSelected={setAlternativeSelected}
-          />
-        </Animated.View>
+        <GestureDetector gesture={onPan}>
+          <Animated.View style={[shakeStyleAnimated, dragStyleAnimated]}>
+            <Question
+              key={quiz.questions[currentQuestion].title}
+              question={quiz.questions[currentQuestion]}
+              alternativeSelected={alternativeSelected}
+              setAlternativeSelected={setAlternativeSelected}
+            />
+          </Animated.View>
+        </GestureDetector>
 
         <View style={styles.footer}>
           <OutlineButton title="Parar" onPress={handleStop} />
