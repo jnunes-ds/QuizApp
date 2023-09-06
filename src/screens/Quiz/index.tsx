@@ -176,6 +176,7 @@ export function Quiz() {
   });
 
   const onPan = Gesture.Pan()
+    .activateAfterLongPress(200)
     .onUpdate((event) => {
       const isMovingToRight: boolean = event.translationX > 15;
 
