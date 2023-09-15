@@ -17,6 +17,7 @@ import Animated, {
   withSequence,
   withTiming,
   runOnJS,
+  useAnimatedProps,
 } from "react-native-reanimated";
 
 import { styles } from "./styles";
